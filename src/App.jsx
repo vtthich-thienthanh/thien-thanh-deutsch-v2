@@ -2,16 +2,56 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 const COMMON_SENTENCES = [
-  "Toi khong hieu",
-  "Xin noi cham lai",
-  "Toi can nghi 5 phut",
-  "May gio roi?",
-  "Toi dang lam viec",
-  "Toi bi dau tay",
-  "Toi met",
-  "Hom nay rat ban",
-  "Cam on rat nhieu",
-  "Tam biet",
+  {
+    vi: "Toi khong hieu",
+    de: "Ich verstehe nicht.",
+    en: "I do not understand.",
+  },
+  {
+    vi: "Xin noi cham lai",
+    de: "Bitte sprechen Sie langsam.",
+    en: "Please speak slowly.",
+  },
+  {
+    vi: "Toi can nghi 5 phut",
+    de: "Ich brauche funf Minuten Pause.",
+    en: "I need a five-minute break.",
+  },
+  {
+    vi: "May gio roi?",
+    de: "Wie spat ist es?",
+    en: "What time is it?",
+  },
+  {
+    vi: "Toi dang lam viec",
+    de: "Ich arbeite gerade.",
+    en: "I am working now.",
+  },
+  {
+    vi: "Toi bi dau tay",
+    de: "Meine Hand tut weh.",
+    en: "My hand hurts.",
+  },
+  {
+    vi: "Toi met",
+    de: "Ich bin mude.",
+    en: "I am tired.",
+  },
+  {
+    vi: "Hom nay rat ban",
+    de: "Heute ist sehr viel los.",
+    en: "Today is very busy.",
+  },
+  {
+    vi: "Cam on rat nhieu",
+    de: "Vielen Dank.",
+    en: "Thank you very much.",
+  },
+  {
+    vi: "Tam biet",
+    de: "Auf Wiedersehen.",
+    en: "Goodbye.",
+  },
 ];
 
 function App() {
@@ -34,6 +74,20 @@ function App() {
     enExampleRead: "",
   });
 
+  const emptyResult = {
+    de: "",
+    deType: "",
+    deRead: "",
+    deExample: "",
+    deExampleRead: "",
+    vi: "",
+    en: "",
+    enType: "",
+    enRead: "",
+    enExample: "",
+    enExampleRead: "",
+  };
+
   const speak = (text, lang) => {
     if (!text) return;
     const u = new SpeechSynthesisUtterance(text);
@@ -52,19 +106,7 @@ function App() {
     if (!text.trim()) return;
 
     setLoading(true);
-    setResult({
-      de: "",
-      deType: "",
-      deRead: "",
-      deExample: "",
-      deExampleRead: "",
-      vi: "",
-      en: "",
-      enType: "",
-      enRead: "",
-      enExample: "",
-      enExampleRead: "",
-    });
+    setResult(emptyResult);
 
     try {
       const res = await fetch("/api/german", {
@@ -87,17 +129,9 @@ function App() {
       setResult(data);
     } catch (err) {
       setResult({
+        ...emptyResult,
         de: "AI error",
-        deType: "",
-        deRead: "",
-        deExample: "",
-        deExampleRead: "",
         vi: err.message,
-        en: "",
-        enType: "",
-        enRead: "",
-        enExample: "",
-        enExampleRead: "",
       });
     } finally {
       setLoading(false);
@@ -114,9 +148,22 @@ function App() {
     return () => clearTimeout(timer);
   }, [input, mode]);
 
-  const useCommonSentence = (sentence) => {
+  const chooseCommon = (item) => {
     setMode("vi-de");
-    setInput(sentence);
+    setInput(item.vi);
+    setResult({
+      de: item.de,
+      deType: "Sentence",
+      deRead: "",
+      deExample: item.de,
+      deExampleRead: "",
+      vi: item.vi,
+      en: item.en,
+      enType: "Sentence",
+      enRead: "",
+      enExample: item.en,
+      enExampleRead: "",
+    });
   };
 
   return (
@@ -138,6 +185,7 @@ function App() {
           onClick={() => {
             setMode("vi-de");
             setInput("");
+            setResult(emptyResult);
           }}
         >
           Viet → Duc + Anh
@@ -148,6 +196,7 @@ function App() {
           onClick={() => {
             setMode("de-vi");
             setInput("");
+            setResult(emptyResult);
           }}
         >
           Duc → Viet + Anh
@@ -183,8 +232,12 @@ function App() {
         <div className="card">
           <div className="badge">1. TIENG DUC</div>
           <h2>{loading ? "Dang xu ly..." : result.de}</h2>
-          <p><b>Tu loai:</b> {result.deType}</p>
-          <p className="read"><b>Cach doc:</b> {result.deRead}</p>
+          <p>
+            <b>Tu loai:</b> {result.deType}
+          </p>
+          <p className="read">
+            <b>Cach doc:</b> {result.deRead}
+          </p>
 
           <div className="btn-row">
             <button onClick={() => speak(result.de, "de-DE")}>Nghe Duc</button>
@@ -193,29 +246,60 @@ function App() {
         </div>
 
         <div className="card">
-          <div className="badge">2. VI DU DUC</div>
-          <h2>{result.deExample}</h2>
-          <p className="read"><b>Cach doc:</b> {result.deExampleRead}</p>
-          <p><b>Nghia Viet:</b> {result.vi}</p>
+          <div className="badge">
+            {mode === "de-vi" ? "2. NGHIA TIENG VIET" : "2. VI DU DUC"}
+          </div>
+
+          {mode === "de-vi" ? (
+            <>
+              <h2>{result.vi}</h2>
+              <p>
+                <b>Vi du Duc:</b> {result.deExample}
+              </p>
+              <p className="read">
+                <b>Cach doc:</b> {result.deExampleRead}
+              </p>
+            </>
+          ) : (
+            <>
+              <h2>{result.deExample}</h2>
+              <p className="read">
+                <b>Cach doc:</b> {result.deExampleRead}
+              </p>
+              <p>
+                <b>Nghia Viet:</b> {result.vi}
+              </p>
+            </>
+          )}
 
           <div className="btn-row">
-            <button onClick={() => speak(result.deExample, "de-DE")}>Nghe cau Duc</button>
-            <button onClick={() => copyText(result.deExample)}>Copy</button>
+            <button onClick={() => speak(result.deExample, "de-DE")}>
+              Nghe cau Duc
+            </button>
+            <button onClick={() => copyText(result.deExample || result.vi)}>
+              Copy
+            </button>
           </div>
         </div>
 
         <div className="card">
           <div className="badge">3. TIENG ANH</div>
           <h2>{result.en}</h2>
-          <p><b>Word type:</b> {result.enType}</p>
-          <p className="read"><b>IPA / Read:</b> {result.enRead}</p>
+          <p>
+            <b>Word type:</b> {result.enType}
+          </p>
+          <p className="read">
+            <b>IPA / Read:</b> {result.enRead}
+          </p>
           <p>{result.enExample}</p>
 
           <div className="btn-row">
             <button onClick={() => speak(result.enExample || result.en, "en-US")}>
               Listen English
             </button>
-            <button onClick={() => copyText(result.enExample || result.en)}>Copy</button>
+            <button onClick={() => copyText(result.enExample || result.en)}>
+              Copy
+            </button>
           </div>
         </div>
       </section>
@@ -223,10 +307,16 @@ function App() {
       <section className="common-card">
         <h2>CAU THONG DUNG</h2>
 
-        <div className="chips">
+        <div className="common-list">
           {COMMON_SENTENCES.map((item, index) => (
-            <button key={index} className="chip" onClick={() => useCommonSentence(item)}>
-              {item}
+            <button
+              key={index}
+              className="common-item"
+              onClick={() => chooseCommon(item)}
+            >
+              <b>{item.vi}</b>
+              <span>{item.de}</span>
+              <small>{item.en}</small>
             </button>
           ))}
         </div>
