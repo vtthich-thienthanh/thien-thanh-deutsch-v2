@@ -1,4 +1,4 @@
-* {
+﻿* {
   box-sizing: border-box;
 }
 
@@ -33,6 +33,11 @@ body {
   margin: 0;
   font-size: 28px;
   font-weight: 900;
+  color: #0f172a;
+}
+
+.dark .topbar h1 {
+  color: #ffffff;
 }
 
 .topbar p {
@@ -97,6 +102,11 @@ button {
   font-weight: 900;
   text-align: center;
   margin-bottom: 12px;
+  color: #0f172a;
+}
+
+.dark .input-card label {
+  color: #ffffff;
 }
 
 .input-row {
@@ -111,8 +121,24 @@ input {
   border-radius: 16px;
   border: 2px solid #0f172a;
   font-size: 24px;
-  font-weight: 800;
-  color: #0f172a;
+  font-weight: 900;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  caret-color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  opacity: 1 !important;
+}
+
+input::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  opacity: 1 !important;
+}
+
+.dark input {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
 }
 
 .instant-read {
@@ -184,29 +210,24 @@ input {
   flex-wrap: wrap;
 }
 
-.common-card h2 {
+.software-info {
   text-align: center;
-  margin-top: 0;
+  padding: 20px;
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-}
-
-.chip {
-  background: #f8fafc;
+.software-info h2,
+.software-info h3 {
   color: #0f172a;
-  border: 1px solid #cbd5e1;
-  border-radius: 999px;
-  padding: 10px 14px;
 }
 
-.dark .chip {
-  background: #334155;
-  color: white;
+.dark .software-info h2,
+.dark .software-info h3 {
+  color: #ffffff;
+}
+
+.software-info p {
+  margin: 10px 0;
+  line-height: 1.6;
 }
 
 @media (max-width: 850px) {
@@ -233,6 +254,9 @@ input {
 
   input {
     font-size: 22px;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
   }
 
   .card h2 {
