@@ -5,8 +5,15 @@ const openai = new OpenAI({
 });
 
 export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(200).json({
+      status: "OK",
+      message: "API german is working. Please use POST request.",
+    });
+  }
+
   try {
-    const { text, mode } = req.body;
+    const { text, mode } = req.body || {};
 
     if (!text) {
       return res.status(400).json({
@@ -14,98 +21,56 @@ export default async function handler(req, res) {
       });
     }
 
-    let prompt = "";
+    const prompt = `
+You are a German-Vietnamese-English learning assistant.
 
-    if (mode === "de-vi") {
-      prompt = `
-Tra từ hoặc cụm từ tiếng Đức sau:
+Input text: "${text}"
+Mode: "${mode}"
 
-${text}
+Return ONLY valid JSON. No markdown. No explanation.
 
-Trả về JSON đúng cấu trúc:
-
+JSON format:
 {
-  "de":"",
-  "deType":"",
-  "deRead":"",
-  "deExample":"",
-  "deExampleRead":"",
-  "vi":"",
-  "en":"",
-  "enType":"",
-  "enRead":"",
-  "enExample":"",
-  "enExampleRead":""
+  "de": "",
+  "deType": "",
+  "deRead": "",
+  "deExample": "",
+  "deExampleRead": "",
+  "vi": "",
+  "en": "",
+  "enType": "",
+  "enRead": "",
+  "enExample": "",
+  "enExampleRead": ""
 }
 
-Yêu cầu:
-- de = từ tiếng Đức gốc
-- deRead = cách đọc tiếng Việt dễ hiểu
-- vi = nghĩa tiếng Việt
-- en = từ tiếng Anh tương đương
-- enRead = cách đọc tiếng Việt của tiếng Anh
-- có ví dụ Đức và Anh
-- chỉ trả JSON
+Rules:
+- If mode is "vi-de": translate Vietnamese to German and English.
+- If mode is "de-vi": translate German to Vietnamese and English.
+- deRead: easy Vietnamese-style pronunciation for German.
+- deExample: useful German example sentence.
+- deExampleRead: easy Vietnamese-style pronunciation for the German sentence.
+- vi: Vietnamese meaning or explanation.
+- en: English equivalent.
+- enRead: easy Vietnamese-style pronunciation or IPA for English.
+- enExample: useful English example sentence.
+- enExampleRead: easy Vietnamese-style pronunciation for the English sentence.
 `;
-    } else {
-      prompt = `
-Dịch từ hoặc cụm từ tiếng Việt sau:
-
-${text}
-
-Trả về JSON đúng cấu trúc:
-
-{
-  "de":"",
-  "deType":"",
-  "deRead":"",
-  "deExample":"",
-  "deExampleRead":"",
-  "vi":"",
-  "en":"",
-  "enType":"",
-  "enRead":"",
-  "enExample":"",
-  "enExampleRead":""
-}
-
-Yêu cầu:
-- de = tiếng Đức chuẩn
-- deRead = cách đọc tiếng Việt
-- deType = từ loại
-- deExample = ví dụ tiếng Đức
-- deExampleRead = cách đọc ví dụ Đức
-- vi = giải thích nghĩa tiếng Việt
-- en = từ tiếng Anh tương đương
-- enType = từ loại tiếng Anh
-- enRead = cách đọc tiếng Việt của tiếng Anh
-- enExample = ví dụ tiếng Anh
-- enExampleRead = cách đọc tiếng Việt của ví dụ Anh
-- chỉ trả JSON
-`;
-    }
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
+      messages: [{ role: "user", content: prompt }],
       temperature: 0.2,
+      response_format: { type: "json_object" },
     });
 
     const raw = completion.choices[0].message.content;
-
     const json = JSON.parse(raw);
 
     return res.status(200).json(json);
   } catch (error) {
-    console.error(error);
-
     return res.status(500).json({
-      error: error.message,
+      error: error.message || "Server error",
     });
   }
 }
